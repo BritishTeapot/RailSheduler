@@ -1,9 +1,16 @@
 #include <algorithm>
+#include <cstdio>
+#include <cstring>
+#include <fcntl.h>
+#include <fstream>
+#include <ios>
 #include <iostream>
 #include <map>
 #include <ostream>
 #include <set>
+#include <string>
 #include <tuple>
+#include <unistd.h>
 #include <vector>
 
 #define range(i, n)                                                            \
@@ -29,33 +36,31 @@ bool pathscmp(std::vector<int> first, std::vector<int> second) {
   return first.size() < second.size();
 }
 
-void inputTrack() {
+void inputTrack(std::ifstream &file) {
   std::set<int> adjacent;
   std::set<int> conflicting;
   int track, nadjacent, nconflicting;
   // track - track number, nadjacent - number of adjacent verticies,
   // nconflicting - number of conflicting verticies
-  //
-  std::cout << "Enter number of the track:\n";
-  std::cin >> track;
 
-  std::cout << "Enter number of adjacent tracks:\n";
-  std::cin >> nadjacent;
-  std::cout << "Enter the adjacent track number:\n";
+  if (file.is_open()) {
+    std::cout << "Bad ifstream in inputTrack function." << std::endl;
+  }
+
+  file >> track;
+  file >> nadjacent;
 
   for (int j = 0; j < nadjacent; j++) {
     int element;
-    std::cin >> element;
+    file >> element;
     adjacent.insert(element);
   }
 
-  std::cout << "Enter number of conflicting tracks:\n";
-  std::cin >> nconflicting;
-  std::cout << "Enter the conflicting track number:\n";
+  file >> nconflicting;
 
   for (int j = 0; j < nconflicting; j++) {
     int element;
-    std::cin >> element;
+    file >> element;
     conflicting.insert(element);
   }
 
@@ -199,11 +204,21 @@ int checkForPosition(int i, int *j) {
 }
 
 int main() {
-  std::cout << "Enter number of tracks:\n";
-  std::cin >> n;
-  for (range(i, n)) {
-    inputTrack();
+  std::cout << "Enter track graph file name:";
+  std::string filename;
+  std::cin >> filename;
+
+  std::ifstream track_graph_file;
+  track_graph_file.open(filename, std::ios::in);
+  if (track_graph_file.is_open()) {
+    for (range(i, n)) {
+      inputTrack(track_graph_file);
+    }
+  } else {
+    perror("Failed to open file");
+    return 1;
   }
+  track_graph_file.close();
 
   std::cout << "Enter number of paths:\n";
   std::cin >> k;
