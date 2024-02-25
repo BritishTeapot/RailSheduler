@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <cstdio>
-#include <cstring>
 #include <fcntl.h>
 #include <fstream>
 #include <ios>
@@ -68,17 +67,15 @@ void inputTrack(std::ifstream &file) {
   conflicts[track] = conflicting;
 }
 
-void inputPath() {
+void inputPath(std::ifstream &file) {
   int lenght;
   std::vector<int> path;
 
-  std::cout << "Enter lenght of the track:\n";
-  std::cin >> lenght;
-  std::cout << "Enter the path:\n";
+  file >> lenght;
 
   for (int i = 0; i < lenght; i++) {
     int element;
-    std::cin >> element;
+    file >> element;
     path.push_back(element);
   }
   paths.push_back(path);
@@ -203,28 +200,43 @@ int checkForPosition(int i, int *j) {
   return 0;
 }
 
+std::ifstream safeFileOpen(std::string filename) {
+  std::ifstream file;
+  file.open(filename, std::ios::in);
+
+  if (file.is_open()) {
+    return file;
+  } else {
+    perror("Failed to open file");
+    exit(1);
+  }
+}
+
 int main() {
   std::cout << "Enter track graph file name:";
   std::string filename;
   std::cin >> filename;
 
-  std::ifstream track_graph_file;
-  track_graph_file.open(filename, std::ios::in);
-  if (track_graph_file.is_open()) {
-    for (range(i, n)) {
-      inputTrack(track_graph_file);
-    }
-  } else {
-    perror("Failed to open file");
-    return 1;
+  std::ifstream track_graph_file = safeFileOpen(filename);
+
+  track_graph_file >> n;
+  for (range(i, n)) {
+    inputTrack(track_graph_file);
   }
+
   track_graph_file.close();
 
-  std::cout << "Enter number of paths:\n";
-  std::cin >> k;
+  std::cout << "Enter paths file name:";
+  std::cin >> filename;
+
+  std::ifstream paths_file = safeFileOpen(filename);
+
+  paths_file >> k;
   for (range(i, k)) {
-    inputPath();
+    inputPath(paths_file);
   }
+
+  paths_file.close();
 
   max_len =
       (int)(*std::max_element(paths.begin(), paths.end(), pathscmp)).size();
