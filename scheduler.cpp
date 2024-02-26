@@ -81,7 +81,7 @@ void inputPath(std::ifstream &file) {
   paths.push_back(path);
 }
 
-//  Chechs is paths exists in the graph
+//  Checks if path exists in the graph
 bool existsPath(std::vector<int> path) {
 
   for (int i = 0; i < (int)path.size(); i++) {
