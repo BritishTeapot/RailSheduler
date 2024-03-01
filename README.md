@@ -3,7 +3,8 @@ Program for automated creation of train schedules.
 
 # Building
 ## Prerequisites
-- `make` must be installed
+- `make` installed
+- `g++` installed
 ## Build
 1. clone the repository: `git clone [current repo link]`
 2. navigate into the repository directory you just cloned
