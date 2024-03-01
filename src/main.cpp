@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 
+#include "route.h"
 #include "track_graph.h"
 
 #define range(i, n)                                                            \
