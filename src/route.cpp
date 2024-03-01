@@ -5,6 +5,8 @@ Route::Route(std::vector<int> path) { this->path = path; }
 
 int Route::getPosition(int index) { return path.at(index); }
 
+int Route::getLength() { return path.size(); }
+
 Route Route::fromFile(std::ifstream &file) {
   int lenght;
   std::vector<int> path;
