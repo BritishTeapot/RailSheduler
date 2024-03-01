@@ -1,3 +1,7 @@
+
+#ifndef TRACK_GRAPH_H
+#define TRACK_GRAPH_H
+
 #include "route.h"
 #include <fstream>
 #include <map>
@@ -18,3 +22,5 @@ public:
              >
   findConflicting(std::vector<Route> routes);
 };
+
+#endif
