@@ -8,5 +8,5 @@ private:
 public:
   Route(std::vector<int> path);
   int getPosition(int index);
-  static Route fromFile(std::ifstream file);
+  static Route fromFile(std::ifstream &file);
 };
