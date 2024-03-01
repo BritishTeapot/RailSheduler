@@ -65,7 +65,8 @@ bool TrackGraph::isRouteValid(Route &route) {
           (adjacent->second.find(route.getPosition(i + 1)) !=
            adjacent->second.end());
 
-      return adjacent_to_next;
+      if (!adjacent_to_next)
+        return false;
     }
   }
   return true;
