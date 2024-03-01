@@ -24,7 +24,7 @@ TrackGraph TrackGraph::fromFile(std::ifstream &file) {
     // track - track number, nadjacent - number of adjacent verticies,
     // nconflicting - number of conflicting verticies
 
-    if (file.is_open()) {
+    if (!file.is_open()) {
       std::cout << "Bad ifstream in inputTrack function." << std::endl;
     }
 
@@ -54,26 +54,18 @@ TrackGraph TrackGraph::fromFile(std::ifstream &file) {
 
 bool TrackGraph::isRouteValid(Route &route) {
   int lenght = route.getLength();
-  for (int i = 0; i < lenght; i++) {
+  for (int i = 0; i < lenght - 1; i++) {
     if (i > 0) {
-      auto adjacent = adjacencyMap.find(route.getPosition(i - 1));
+      auto adjacent = adjacencyMap.find(route.getPosition(i));
 
-      bool is_finished = (route.getPosition(i) == -2);
-      bool previous_vertex_has_adjacent = (adjacent != adjacencyMap.end());
-      if (!is_finished) {
-        if (!previous_vertex_has_adjacent) {
-          return false;
-        } else {
-          bool is_previous_vertex_connected =
-              adjacent->second.find(route.getPosition(i)) !=
-              adjacent->second.end();
-          bool is_moving = adjacent->first != route.getPosition(i);
+      // here we presume the route can't contain path "a -> a"
+      // because that does not make sense in the job-shop graph
+      bool adjacent_to_next =
+          (adjacent != adjacencyMap.end()) &&
+          (adjacent->second.find(route.getPosition(i + 1)) !=
+           adjacent->second.end());
 
-          if (!is_previous_vertex_connected && is_moving) {
-            return false;
-          }
-        }
-      }
+      return adjacent_to_next;
     }
   }
   return true;
