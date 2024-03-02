@@ -11,6 +11,8 @@ Program for automated creation of train schedules.
 ## Using the program
 1. navigate into the `build` directory
 2. run the program with: `./scheduler`
+## Remove
+Use `make clean`
 
 # Link to the project website:
 https://www.st.fmph.uniba.sk/~kovalov3/
