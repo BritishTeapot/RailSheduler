@@ -26,7 +26,7 @@ Route Route::fromFile(std::ifstream &file) {
      * however if we assume no consecutive duplicates are present,
      * code can be simplified a lot.
      */
-    if ((i != lenght - 1) && (element == path.back())) {
+    if ((i != 0) && (element == path.back())) {
       std::cout << "Bad file format: consecutive duplicate path veritcies."
                 << std::endl;
       exit(EXIT_FAILURE);
