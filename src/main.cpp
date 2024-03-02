@@ -18,7 +18,11 @@ std::ifstream safeOpen(std::string filename) {
   if (file.is_open()) {
     return file;
   } else {
-    perror("Failed to open file");
+    std::string msg = "Failed to open file ";
+    msg.push_back('"');
+    msg.append(filename);
+    msg.push_back('"');
+    perror(msg.data());
     exit(EXIT_FAILURE);
   }
 }
