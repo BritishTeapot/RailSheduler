@@ -81,7 +81,11 @@ int main(int argc, char *argv[]) {
   paths_file.close();
 
   for (range(i, paths_amount)) {
-    graph.isRouteValid(routes.at(i));
+    if (!graph.isRouteValid(routes.at(i))) {
+      std::cout << "Route " << i << " isn't valid in the track graph"
+                << std::endl;
+      exit(EXIT_FAILURE);
+    }
   }
 
   // TODO: job-shop check here
