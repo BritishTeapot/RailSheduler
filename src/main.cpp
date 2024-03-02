@@ -38,7 +38,7 @@ int main() {
 
   track_graph_file.close();
 
-  std::cout << "Enter paths file name:";
+  std::cout << "Enter routes file name:";
   std::cin >> filename;
 
   std::ifstream paths_file = safeOpen(filename);
