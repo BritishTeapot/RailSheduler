@@ -1,4 +1,5 @@
 #include "track_graph.h"
+#include <cstdint>
 #include <iostream>
 
 #define range(i, n)                                                            \
@@ -6,20 +7,20 @@
   i < n;                                                                       \
   i++
 
-TrackGraph::TrackGraph(std::map<int, std::set<int>> adjacencyMap,
-                       std::map<int, std::set<int>> conflictMap) {
+TrackGraph::TrackGraph(std::map<int64_t, std::set<int64_t>> adjacencyMap,
+                       std::map<int64_t, std::set<int64_t>> conflictMap) {
   this->conflictMap = conflictMap;
   this->adjacencyMap = adjacencyMap;
 }
 
 TrackGraph TrackGraph::fromFile(std::ifstream &file) {
   int n;
-  std::map<int, std::set<int>> adjacencyMap;
-  std::map<int, std::set<int>> conflictMap;
+  std::map<int64_t, std::set<int64_t>> adjacencyMap;
+  std::map<int64_t, std::set<int64_t>> conflictMap;
   file >> n;
   for (range(i, n)) {
-    std::set<int> adjacent;
-    std::set<int> conflicting;
+    std::set<int64_t> adjacent;
+    std::set<int64_t> conflicting;
     int track, nadjacent, nconflicting;
     // track - track number, nadjacent - number of adjacent verticies,
     // nconflicting - number of conflicting verticies

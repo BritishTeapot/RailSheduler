@@ -1,18 +1,19 @@
 #include "route.h"
+#include <cstdint>
 #include <cstdlib>
 #include <iostream>
 #include <ostream>
 #include <vector>
 
-Route::Route(std::vector<int> path) { this->path = path; }
+Route::Route(std::vector<int64_t> path) { this->path = path; }
 
-int Route::getPosition(int index) { return path.at(index); }
+int64_t Route::getPosition(int index) { return path.at(index); }
 
 int Route::getLength() { return path.size(); }
 
 Route Route::fromFile(std::ifstream &file) {
   int lenght;
-  std::vector<int> path;
+  std::vector<int64_t> path;
 
   file >> lenght;
 
