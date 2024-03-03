@@ -7,6 +7,8 @@
 
 Route::Route(std::vector<int64_t> path) { this->path = path; }
 
+Route::Route() {} // default constructor for an empty path
+
 int64_t Route::getPosition(int index) { return path.at(index); }
 
 int Route::getLength() { return path.size(); }

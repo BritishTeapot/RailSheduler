@@ -13,6 +13,8 @@ TrackGraph::TrackGraph(std::map<int64_t, std::set<int64_t>> adjacencyMap,
   this->adjacencyMap = adjacencyMap;
 }
 
+TrackGraph::TrackGraph() {} // default constructor for an empty graph
+
 TrackGraph TrackGraph::fromFile(std::ifstream &file) {
   int n;
   std::map<int64_t, std::set<int64_t>> adjacencyMap;

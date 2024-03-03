@@ -11,6 +11,7 @@ private:
   std::vector<int64_t> path;
 
 public:
+  Route();
   Route(std::vector<int64_t> path);
   int64_t getPosition(int index);
   int getLength();
