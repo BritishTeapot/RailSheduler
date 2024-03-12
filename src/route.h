@@ -27,6 +27,7 @@ public:
   Route(std::vector<routeVertex> path);
   Route(std::vector<std::pair<int64_t, int64_t>> path);
   int64_t getPosition(int index);
+  routeVertex getVertex(int index);
   int getLength();
   static Route fromFile(std::ifstream &file);
 };

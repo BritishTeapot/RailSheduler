@@ -18,9 +18,12 @@ Route::Route(std::vector<std::pair<int64_t, int64_t>> path) {
   this->path = new_path;
 }
 
+Route::Route(std::vector<routeVertex> path) { this->path = path; }
+
 Route::Route() {} // default constructor for an empty path
 
 int64_t Route::getPosition(int index) { return path.at(index).track; }
+routeVertex Route::getVertex(int index) { return path.at(index); }
 
 int Route::getLength() { return path.size(); }
 
@@ -34,7 +37,7 @@ Route Route::fromFile(std::ifstream &file) {
     int64_t track;
     int64_t time;
     file >> track;
-    file >> track;
+    file >> time;
     /*
      * Following code checks for subpaths like "a -> a" (a.k.a. duplicate
      * consecutive veritcies), which do not make sense in the job-shop model.
