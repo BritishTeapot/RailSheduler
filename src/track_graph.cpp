@@ -74,3 +74,12 @@ bool TrackGraph::isRouteValid(Route &route) {
   }
   return true;
 }
+
+std::set<int64_t> TrackGraph::getTracks() {
+  std::set<int64_t> tracks;
+  for (auto tup : adjacencyMap) {
+    tracks.insert(tup.first);
+  }
+
+  return tracks;
+}
