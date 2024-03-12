@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "route.h"
+#include "schedule.h"
 #include "track_graph.h"
 
 #define range(i, n)                                                            \
@@ -88,7 +89,8 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  // TODO: job-shop check here
+  Schedule new_schedule(routes, graph);
+  new_schedule.solve();
 
   std::cout << "No problems have been found in the schedule.";
 
