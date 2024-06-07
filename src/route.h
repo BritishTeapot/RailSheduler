@@ -7,8 +7,10 @@
 #include <utility>
 #include <vector>
 
+using track_t = int64_t;
+
 struct routeVertex {
-  int64_t track;
+  track_t track;
 
   // here min_time is minimum time the
   // train needs to spend on this track to
@@ -25,8 +27,8 @@ private:
 public:
   Route();
   Route(std::vector<routeVertex> path);
-  Route(std::vector<std::pair<int64_t, int64_t>> path);
-  int64_t getPosition(int index);
+  Route(std::vector<std::pair<track_t, int64_t>> path);
+  track_t getPosition(int index);
   routeVertex getVertex(int index);
   int getLength();
   static Route fromFile(std::ifstream &file);

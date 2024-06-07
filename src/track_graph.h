@@ -22,6 +22,7 @@ public:
   bool isRouteValid(Route &route);
   std::vector<track_t> getTracks();
   std::vector<track_t> getAdjacent(track_t track);
+  std::vector<Route> findAllRoutes(track_t from, track_t to);
 };
 
 #endif
