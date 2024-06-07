@@ -1,14 +1,16 @@
 #include "track_graph.h"
+#include <algorithm>
 #include <cstdint>
 #include <iostream>
+#include <vector>
 
 #define range(i, n)                                                            \
-  int i = 0;                                                                   \
+  uint32_t i = 0;                                                              \
   i < n;                                                                       \
   i++
 
-TrackGraph::TrackGraph(std::map<int64_t, std::set<int64_t>> adjacencyMap,
-                       std::map<int64_t, std::set<int64_t>> conflictMap) {
+TrackGraph::TrackGraph(std::map<track_t, std::vector<track_t>> adjacencyMap,
+                       std::map<track_t, std::vector<track_t>> conflictMap) {
   this->conflictMap = conflictMap;
   this->adjacencyMap = adjacencyMap;
 }
@@ -16,14 +18,15 @@ TrackGraph::TrackGraph(std::map<int64_t, std::set<int64_t>> adjacencyMap,
 TrackGraph::TrackGraph() {} // default constructor for an empty graph
 
 TrackGraph TrackGraph::fromFile(std::ifstream &file) {
-  int n;
-  std::map<int64_t, std::set<int64_t>> adjacencyMap;
-  std::map<int64_t, std::set<int64_t>> conflictMap;
+  uint32_t n;
+  std::map<track_t, std::vector<track_t>> adjacencyMap;
+  std::map<track_t, std::vector<track_t>> conflictMap;
   file >> n;
   for (range(i, n)) {
-    std::set<int64_t> adjacent;
-    std::set<int64_t> conflicting;
-    int track, nadjacent, nconflicting;
+    std::vector<track_t> adjacent;
+    std::vector<track_t> conflicting;
+    track_t track;
+    uint32_t nadjacent, nconflicting;
     // track - track number, nadjacent - number of adjacent verticies,
     // nconflicting - number of conflicting verticies
 
@@ -34,18 +37,18 @@ TrackGraph TrackGraph::fromFile(std::ifstream &file) {
     file >> track;
     file >> nadjacent;
 
-    for (int j = 0; j < nadjacent; j++) {
-      int element;
+    for (uint32_t j = 0; j < nadjacent; j++) {
+      track_t element;
       file >> element;
-      adjacent.insert(element);
+      adjacent.push_back(element);
     }
 
     file >> nconflicting;
 
-    for (int j = 0; j < nconflicting; j++) {
-      int element;
+    for (uint32_t j = 0; j < nconflicting; j++) {
+      track_t element;
       file >> element;
-      conflicting.insert(element);
+      conflicting.push_back(element);
     }
 
     adjacencyMap[track] = adjacent;
@@ -56,8 +59,8 @@ TrackGraph TrackGraph::fromFile(std::ifstream &file) {
 }
 
 bool TrackGraph::isRouteValid(Route &route) {
-  int lenght = route.getLength();
-  for (int i = 0; i < lenght - 1; i++) {
+  uint32_t length = route.getLength();
+  for (uint32_t i = 0; i < length - 1; i++) {
     if (i > 0) {
       auto adjacent = adjacencyMap.find(route.getPosition(i));
 
@@ -65,8 +68,8 @@ bool TrackGraph::isRouteValid(Route &route) {
       // because that does not make sense in the job-shop graph
       bool adjacent_to_next =
           (adjacent != adjacencyMap.end()) &&
-          (adjacent->second.find(route.getPosition(i + 1)) !=
-           adjacent->second.end());
+          (std::find(adjacent->second.begin(), adjacent->second.end(),
+                     route.getPosition(i + 1)) != adjacent->second.end());
 
       if (!adjacent_to_next)
         return false;
@@ -75,11 +78,15 @@ bool TrackGraph::isRouteValid(Route &route) {
   return true;
 }
 
-std::set<int64_t> TrackGraph::getTracks() {
-  std::set<int64_t> tracks;
+std::vector<track_t> TrackGraph::getTracks() {
+  std::vector<track_t> tracks;
   for (auto tup : adjacencyMap) {
-    tracks.insert(tup.first);
+    tracks.push_back(tup.first);
   }
 
   return tracks;
+}
+
+std::vector<track_t> TrackGraph::getAdjacent(track_t track) {
+  return adjacencyMap[track];
 }
