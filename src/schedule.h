@@ -7,6 +7,7 @@
 #include <vector>
 class Schedule {
 private:
+  std::vector<Route> solution;
   std::vector<Route> routes;
   TrackGraph track_graph;
   bool is_solved;
@@ -15,7 +16,8 @@ public:
   Schedule(std::vector<Route> routes, TrackGraph track_graph);
   void solve();
   bool isSolved();
-  // TODO: make a getter for a result
+  int getRoutesCount();
+  Route getRoute(int index);
 };
 
 #endif

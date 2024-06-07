@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cstdint>
 #include <vector>
 
@@ -14,7 +15,17 @@
 Schedule::Schedule(std::vector<Route> routes, TrackGraph track_graph) {
   this->track_graph = track_graph;
   this->routes = routes;
+  is_solved = false;
 }
+
+bool Schedule::isSolved() { return is_solved; }
+
+Route Schedule::getRoute(int index) {
+  assert(isSolved());
+  return solution[index]; // here we return the LAST KNOWN good solution
+}
+
+int Schedule::getRoutesCount() { return solution.size(); }
 
 void Schedule::solve() {
   // TODO: implement a function for constraint calculation
@@ -32,7 +43,9 @@ void Schedule::solve() {
   // we calculate it by summing all of the route lengths
   int64_t horizon = 0;
   for (auto route : routes) {
-    horizon += route.getLength() * 60; // HOTFIX for no constraint function
+    for (uint32_t i = 0; i < route.getLength(); i++) {
+      horizon += route.getVertex(i).min_time;
+    }
   }
 
   struct TaskType {
@@ -48,45 +61,40 @@ void Schedule::solve() {
     IntervalVar interval;
   };
 
-  auto all_machines = track_graph.getTracks();
-
   using TaskID = std::tuple<int, int>; // (route id, track/task ID)
-                                       // std::map<TaskID, TaskType> all_tasks;
+  auto all_tracks = track_graph.getTracks();
   std::map<TaskID, TaskType> all_tasks;
-  std::map<int64_t, std::vector<IntervalVar>> machine_to_intervals;
-  for (int job_id = 0; job_id < routes.size(); ++job_id) {
-    Route &job = routes[job_id];
-    for (int task_id = 0; task_id < job.getLength(); ++task_id) {
-      const auto task = job.getPosition(task_id);
-      std::string suffix = absl::StrFormat("_%d_%d", job_id, task_id);
+  std::map<int64_t, std::vector<IntervalVar>> tracks_intervals;
+
+  /* tell cp-sat to define variables for our problem */
+  for (int route_id = 0; route_id < routes.size(); ++route_id) {
+    Route &route = routes[route_id];
+    for (int task_id = 0; task_id < route.getLength(); ++task_id) {
+      const auto [task, duration] = route.getVertex(task_id);
+      std::string suffix = absl::StrFormat("_%d_%d", route_id, task_id);
       IntVar start = cp_model.NewIntVar({0, horizon})
                          .WithName(std::string("start") + suffix);
       IntVar end = cp_model.NewIntVar({0, horizon})
                        .WithName(std::string("end") + suffix);
-      IntervalVar interval =
-          cp_model
-              .NewIntervalVar(
-                  start,
-                  60, /* 60 is a HOTFIX for abscense of a constraint function */
-                  end)
-              .WithName(std::string("interval") + suffix);
-      TaskID key = std::make_tuple(job_id, task_id);
+      IntervalVar interval = cp_model.NewIntervalVar(start, duration, end)
+                                 .WithName(std::string("interval") + suffix);
+      TaskID key = std::make_tuple(route_id, task_id);
       all_tasks.emplace(key, TaskType{/*.start=*/start,
                                       /*.end=*/end,
                                       /*.interval=*/interval});
-      machine_to_intervals[task].push_back(interval);
+      tracks_intervals[task].push_back(interval);
     }
   }
 
-  for (const auto machine : all_machines) {
-    cp_model.AddNoOverlap(machine_to_intervals[machine]);
+  for (const auto track : all_tracks) {
+    cp_model.AddNoOverlap(tracks_intervals[track]);
   }
 
-  for (int job_id = 0; job_id < routes.size(); ++job_id) {
-    auto &job = routes[job_id];
-    for (int task_id = 0; task_id < job.getLength() - 1; ++task_id) {
-      TaskID key = std::make_tuple(job_id, task_id);
-      TaskID next_key = std::make_tuple(job_id, task_id + 1);
+  for (int route_id = 0; route_id < routes.size(); ++route_id) {
+    Route &route = routes[route_id];
+    for (int task_id = 0; task_id < route.getLength() - 1; ++task_id) {
+      TaskID key = std::make_tuple(route_id, task_id);
+      TaskID next_key = std::make_tuple(route_id, task_id + 1);
       cp_model.AddGreaterOrEqual(all_tasks[next_key].start, all_tasks[key].end);
     }
   }
@@ -103,70 +111,28 @@ void Schedule::solve() {
   cp_model.Minimize(obj_var);
 
   const CpSolverResponse response = Solve(cp_model.Build());
+  is_solved = (response.status() == CpSolverStatus::OPTIMAL ||
+               response.status() == CpSolverStatus::FEASIBLE);
 
-  // vvvvvvvvvvvvvvvvvvv REMOVE LATER vvvvvvvvvvvvvvvvvvvv
+  if (is_solved) {
+    solution.clear(); // delete the last solution
 
-  if (response.status() == CpSolverStatus::OPTIMAL ||
-      response.status() == CpSolverStatus::FEASIBLE) {
-    LOG(INFO) << "Solution:";
-    // create one list of assigned tasks per machine.
-    struct AssignedTaskType {
-      int job_id;
-      int task_id;
-      int64_t start;
-      int64_t duration;
-
-      bool operator<(const AssignedTaskType &rhs) const {
-        return std::tie(this->start, this->duration) <
-               std::tie(rhs.start, rhs.duration);
-      }
-    };
-
-    std::map<int64_t, std::vector<AssignedTaskType>> assigned_jobs;
     for (int job_id = 0; job_id < routes.size(); ++job_id) {
       auto &job = routes[job_id];
-      for (int task_id = 0; task_id < job.getLength(); ++task_id) {
+      std::vector<routeVertex> route;
+      for (int task_id = 0; task_id < job.getLength() - 1; ++task_id) {
+
         const auto machine = job.getPosition(task_id);
         TaskID key = std::make_tuple(job_id, task_id);
-        int64_t start = SolutionIntegerValue(response, all_tasks[key].start);
-        assigned_jobs[machine].push_back(AssignedTaskType{
-            /*.job_id=*/job_id,
-            /*.task_id=*/task_id,
-            /*.start=*/start,
-            /*.duration=*/60}); // HOTFIX for abscense of a function
+        int64_t start = SolutionIntegerValue(
+            response, all_tasks[std::make_tuple(job_id, task_id)].start);
+        int64_t end = SolutionIntegerValue(
+            response, all_tasks[std::make_tuple(job_id, task_id + 1)].start);
+        int64_t duration = end - start;
+
+        route.push_back(routeVertex{machine, duration});
       }
+      solution.push_back(Route(route));
     }
-
-    // Create per machine output lines.
-    std::string output = "";
-    for (const auto machine : all_machines) {
-      // Sort by starting time.
-      std::sort(assigned_jobs[machine].begin(), assigned_jobs[machine].end());
-      std::string sol_line_tasks = "Machine " + std::to_string(machine) + ": ";
-      std::string sol_line = "           ";
-
-      for (const auto &assigned_task : assigned_jobs[machine]) {
-        std::string name = absl::StrFormat(
-            "job_%d_task_%d", assigned_task.job_id, assigned_task.task_id);
-        // Add spaces to output to align columns.
-        sol_line_tasks += absl::StrFormat("%-15s", name);
-
-        int64_t start = assigned_task.start;
-        int64_t duration = assigned_task.duration;
-        std::string sol_tmp =
-            absl::StrFormat("[%i,%i]", start, start + duration);
-        // Add spaces to output to align columns.
-        sol_line += absl::StrFormat("%-15s", sol_tmp);
-      }
-      output += sol_line_tasks + "\n";
-      output += sol_line + "\n";
-    }
-    // Finally print the solution found.
-    LOG(INFO) << "Optimal Schedule Length: " << response.objective_value();
-    LOG(INFO) << "\n" << output;
-  } else {
-    LOG(INFO) << "No solution found.";
   }
-
-  // ^^^^^^^^^^ REMOVE LATER END ^^^^^^^^^^^^^^^^^
 }

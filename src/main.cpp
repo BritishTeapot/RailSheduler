@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -92,17 +93,20 @@ int main(int argc, char *argv[]) {
   Schedule new_schedule(routes, graph);
   new_schedule.solve();
 
-  std::cout << "No problems have been found in the schedule.";
-
-  /*
-  std::cout << '\n';
-  for (auto i : paths) {
-    for (auto j : i) {
-      std::cout << j << " ";
-    }
-    std::cout << '\n';
+  if (!new_schedule.isSolved()) {
+    std::cout << "Scheduler found no feasible solutions." << std::endl;
+    exit(EXIT_FAILURE);
   }
-  */
+
+  for (range(i, new_schedule.getRoutesCount())) {
+    Route route = new_schedule.getRoute(i);
+    int64_t time = 0;
+    for (range(j, route.getLength())) {
+      time += route.getVertex(j).min_time;
+      std::cout << time << " " << route.getVertex(j).track << "\n";
+    }
+    std::cout << "\n";
+  }
 
   std::cout << std::endl;
   exit(EXIT_SUCCESS);
