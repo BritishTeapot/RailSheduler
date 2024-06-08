@@ -1,4 +1,5 @@
 #include "track_graph.h"
+#include "route.h"
 #include <algorithm>
 #include <cstdint>
 #include <iostream>
@@ -93,6 +94,10 @@ std::vector<track_t> TrackGraph::getTracks() {
 
 std::vector<track_t> TrackGraph::getAdjacent(track_t track) {
   return adjacencyMap[track];
+}
+
+std::vector<track_t> TrackGraph::getConflicting(track_t track) {
+  return conflictMap[track];
 }
 
 std::vector<Route> TrackGraph::findAllRoutes(track_t from, track_t to) {
