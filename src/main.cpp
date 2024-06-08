@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  Schedule new_schedule(routes, {}, graph);
+  Schedule new_schedule(routes, {graph.findAllRoutes(19, 5)}, graph);
   new_schedule.solve();
 
   if (!new_schedule.isSolved()) {
@@ -109,6 +109,7 @@ int main(int argc, char *argv[]) {
     std::cout << "\n";
   }
 
+  /*
   auto res = graph.findAllRoutes(1, 20);
 
   for (auto r : res) {
@@ -117,6 +118,7 @@ int main(int argc, char *argv[]) {
       std::cout << r.getPosition(i) << " ";
     }
   }
+  */
 
   std::cout << std::endl;
   exit(EXIT_SUCCESS);
