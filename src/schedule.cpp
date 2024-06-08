@@ -41,25 +41,18 @@ void Schedule::solve() {
   using namespace sat; // operations_research::sat
   CpModelBuilder cp_model;
 
-  // TODO: make route constructor compute this
-
   // scheduling horizon is the last time something can happen in our model
   // we calculate it by summing all of the route lengths
   int64_t horizon = 0;
   for (auto route : routes) {
-    for (uint32_t i = 0; i < route.getLength(); i++) {
-      horizon += route.getVertex(i).min_time;
-    }
+    horizon += route.getTime();
   }
   // dealing with the optroutes is slightly harder
-  // we must compute the largest route out of them, and
-  // add it's length
+  // we must compute the largest route out of them
   for (auto optroute : optroutes) {
     uint32_t max = 0;
     for (auto route : optroute) {
-      for (uint32_t i = 0; i < route.getLength(); i++) {
-        horizon += route.getVertex(i).min_time;
-      }
+      max = (route.getTime() > max) ? route.getTime() : max;
     }
   }
 

@@ -7,25 +7,35 @@
 #include <utility>
 #include <vector>
 
-Route::Route(std::vector<std::pair<int64_t, int64_t>> path) {
+Route::Route(std::vector<std::pair<track_t, uint32_t>> path) {
   std::vector<routeVertex> new_path;
+  route_time = 0;
   for (auto i : path) {
     routeVertex rv;
     rv.track = i.first;
     rv.min_time = i.second;
+    route_time += i.second;
     new_path.push_back(rv);
   }
   this->path = new_path;
 }
 
-Route::Route(std::vector<routeVertex> path) { this->path = path; }
+Route::Route(std::vector<routeVertex> path) {
+  this->path = path;
+  route_time = 0;
+  for (auto rv : path) {
+    route_time += rv.min_time;
+  }
+}
 
-Route::Route() {} // default constructor for an empty path
+Route::Route() { route_time = 0; } // default constructor for an empty path
 
-int64_t Route::getPosition(int index) { return path.at(index).track; }
+track_t Route::getPosition(int index) { return path.at(index).track; }
 routeVertex Route::getVertex(int index) { return path.at(index); }
 
-int Route::getLength() { return path.size(); }
+size_t Route::getLength() { return path.size(); }
+
+uint32_t Route::getTime() { return route_time; }
 
 Route Route::fromFile(std::ifstream &file) {
   size_t lenght;
@@ -34,8 +44,8 @@ Route Route::fromFile(std::ifstream &file) {
   file >> lenght;
 
   for (size_t i = 0; i < lenght; i++) {
-    int64_t track;
-    int64_t time;
+    track_t track;
+    uint32_t time;
     file >> track;
     file >> time;
     /*
