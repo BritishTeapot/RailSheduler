@@ -98,7 +98,7 @@ std::vector<track_t> TrackGraph::getAdjacent(track_t track) {
 std::vector<Route> TrackGraph::findAllRoutes(track_t from, track_t to) {
 
   std::queue<
-      std::pair<std::vector<std::pair<track_t, int64_t>>, std::set<track_t>>>
+      std::pair<std::vector<std::pair<track_t, uint32_t>>, std::set<track_t>>>
       q;
   std::vector<Route> routes;
   q.push({{{from, TIME_SECTION}}, std::set<track_t>()});

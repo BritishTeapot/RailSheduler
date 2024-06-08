@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  Schedule new_schedule(routes, graph);
+  Schedule new_schedule(routes, {}, graph);
   new_schedule.solve();
 
   if (!new_schedule.isSolved()) {
@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
   for (range(i, new_schedule.getRoutesCount())) {
     Route route = new_schedule.getRoute(i);
     int64_t time = 0;
-    for (range(j, route.getLength())) {
+    for (range(j, (int)route.getLength())) {
       time += route.getVertex(j).min_time;
       std::cout << time << " " << route.getVertex(j).track << "\n";
     }
