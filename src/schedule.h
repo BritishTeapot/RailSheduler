@@ -9,14 +9,20 @@ class Schedule {
 private:
   std::vector<Route> solution;
   std::vector<Route> routes;
+  std::vector<std::vector<Route>> optroutes;
   TrackGraph track_graph;
   bool is_solved;
 
 public:
-  Schedule(std::vector<Route> routes, TrackGraph track_graph);
+  // optroutes are routes with alternative paths, e.g. vectors or routes
+  // where exctly one must be chosen for the schedule.
+  Schedule(std::vector<Route> routes, std::vector<std::vector<Route>> optroutes,
+           TrackGraph track_graph);
   void solve();
   bool isSolved();
+  // this must be the same as routes.size() + optroutes.size().
   int getRoutesCount();
+  // if not solved, will return empty route
   Route getRoute(int index);
 };
 

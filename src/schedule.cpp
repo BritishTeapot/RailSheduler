@@ -12,7 +12,9 @@
 #include <ortools/sat/cp_model.pb.h>
 #include <ortools/sat/cp_model_solver.h>
 
-Schedule::Schedule(std::vector<Route> routes, TrackGraph track_graph) {
+Schedule::Schedule(std::vector<Route> routes,
+                   std::vector<std::vector<Route>> optroutes,
+                   TrackGraph track_graph) {
   this->track_graph = track_graph;
   this->routes = routes;
   is_solved = false;
@@ -39,12 +41,25 @@ void Schedule::solve() {
   using namespace sat; // operations_research::sat
   CpModelBuilder cp_model;
 
+  // TODO: make route constructor compute this
+
   // scheduling horizon is the last time something can happen in our model
   // we calculate it by summing all of the route lengths
   int64_t horizon = 0;
   for (auto route : routes) {
     for (uint32_t i = 0; i < route.getLength(); i++) {
       horizon += route.getVertex(i).min_time;
+    }
+  }
+  // dealing with the optroutes is slightly harder
+  // we must compute the largest route out of them, and
+  // add it's length
+  for (auto optroute : optroutes) {
+    uint32_t max = 0;
+    for (auto route : optroute) {
+      for (uint32_t i = 0; i < route.getLength(); i++) {
+        horizon += route.getVertex(i).min_time;
+      }
     }
   }
 

@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -106,6 +107,15 @@ int main(int argc, char *argv[]) {
       std::cout << time << " " << route.getVertex(j).track << "\n";
     }
     std::cout << "\n";
+  }
+
+  auto res = graph.findAllRoutes(1, 20);
+
+  for (auto r : res) {
+    std::cout << "\n";
+    for (uint32_t i = 0; i < r.getLength(); i++) {
+      std::cout << r.getPosition(i) << " ";
+    }
   }
 
   std::cout << std::endl;
