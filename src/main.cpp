@@ -34,6 +34,7 @@ std::ifstream safeOpen(std::string filename) {
 int main(int argc, char *argv[]) {
   std::string track_graph_filename;
   std::string routes_filename;
+  std::string optroutes_filename;
 
   // processing arguments
   for (range(i, argc)) {
@@ -49,11 +50,17 @@ int main(int argc, char *argv[]) {
                routes_filename.empty()) {
       routes_filename.append(argv[i + 1]);
       i++;
+    } else if (strcmp(argv[i], "--optroutes") == 0 && i != argc - 1 &&
+               optroutes_filename.empty()) {
+      optroutes_filename.append(argv[i + 1]);
+      i++;
     } else {
       std::cout << "Bad argument " << '"' << argv[i] << '"' << std::endl;
       exit(EXIT_FAILURE);
     }
   }
+
+  // track graph
 
   if (track_graph_filename.empty()) {
     std::cout << "Enter track graph file name:";
@@ -66,32 +73,48 @@ int main(int argc, char *argv[]) {
 
   track_graph_file.close();
 
+  // routes
+
   if (routes_filename.empty()) {
     std::cout << "Enter routes file name:";
     std::cin >> routes_filename;
   }
 
-  std::ifstream paths_file = safeOpen(routes_filename);
+  std::ifstream routes_file = safeOpen(routes_filename);
 
   std::vector<Route> routes;
 
-  int paths_amount;
-  paths_file >> paths_amount;
-  for (range(i, paths_amount)) {
-    routes.push_back(Route::fromFile(paths_file));
+  int routes_count;
+  routes_file >> routes_count;
+  for (range(i, routes_count)) {
+    routes.push_back(Route::fromFile(routes_file));
   }
 
-  paths_file.close();
+  routes_file.close();
 
-  for (range(i, paths_amount)) {
-    if (!graph.isRouteValid(routes.at(i))) {
-      std::cout << "Route " << i << " isn't valid in the track graph"
-                << std::endl;
-      exit(EXIT_FAILURE);
-    }
+  // optroutes
+
+  if (optroutes_filename.empty()) {
+    std::cout << "Enter routes file name:";
+    std::cin >> optroutes_filename;
   }
 
-  Schedule new_schedule(routes, {graph.findAllRoutes(19, 5)}, graph);
+  std::ifstream optroutes_file = safeOpen(optroutes_filename);
+
+  std::vector<std::vector<Route>> optroutes;
+
+  int optroutes_count;
+  optroutes_file >> optroutes_count;
+  for (range(i, optroutes_count)) {
+    track_t from, to;
+    optroutes_file >> from;
+    optroutes_file >> to;
+    optroutes.push_back(graph.findAllRoutes(from, to));
+  }
+
+  // do the job
+
+  Schedule new_schedule(routes, optroutes, graph);
   new_schedule.solve();
 
   if (!new_schedule.isSolved()) {
@@ -108,17 +131,6 @@ int main(int argc, char *argv[]) {
     }
     std::cout << "\n";
   }
-
-  /*
-  auto res = graph.findAllRoutes(1, 20);
-
-  for (auto r : res) {
-    std::cout << "\n";
-    for (uint32_t i = 0; i < r.getLength(); i++) {
-      std::cout << r.getPosition(i) << " ";
-    }
-  }
-  */
 
   std::cout << std::endl;
   exit(EXIT_SUCCESS);
