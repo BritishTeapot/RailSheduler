@@ -110,6 +110,7 @@ int main(int argc, char *argv[]) {
     optroutes_file >> from;
     optroutes_file >> to;
     optroutes.push_back(graph.findAllRoutes(from, to));
+    std::cout << optroutes.back().size() << " ";
   }
 
   // do the job
