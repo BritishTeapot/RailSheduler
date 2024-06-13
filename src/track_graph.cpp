@@ -7,7 +7,7 @@
 #include <set>
 #include <vector>
 
-#define TIME_SECTION 5
+#define TIME_SECTION 10
 
 #define range(i, n)                                                            \
   uint32_t i = 0;                                                              \
@@ -36,7 +36,7 @@ TrackGraph TrackGraph::fromFile(std::ifstream &file) {
     // nconflicting - number of conflicting verticies
 
     if (!file.is_open()) {
-      std::cout << "Bad ifstream in inputTrack function." << std::endl;
+      std::cout << "Bad ifstream." << std::endl;
     }
 
     file >> track;
@@ -56,8 +56,8 @@ TrackGraph TrackGraph::fromFile(std::ifstream &file) {
       conflicting.push_back(element);
     }
 
-    adjacencyMap[track] = adjacent;
-    conflictMap[track] = conflicting;
+    adjacencyMap.insert({track, adjacent});
+    conflictMap.insert({track, conflicting});
   }
 
   return TrackGraph(adjacencyMap, conflictMap);
@@ -93,11 +93,11 @@ std::vector<track_t> TrackGraph::getTracks() {
 }
 
 std::vector<track_t> TrackGraph::getAdjacent(track_t track) {
-  return adjacencyMap[track];
+  return adjacencyMap.at(track);
 }
 
 std::vector<track_t> TrackGraph::getConflicting(track_t track) {
-  return conflictMap[track];
+  return conflictMap.at(track);
 }
 
 std::vector<Route> TrackGraph::findAllRoutes(track_t from, track_t to) {
