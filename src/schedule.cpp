@@ -137,20 +137,15 @@ void Schedule::solve() {
   }
 
   /* no interval overlaps on conflicting tracks */
-  std::set<track_t> visited;
   for (const auto track : all_tracks) {
     auto conflicting = tracks_intervals.at(track);
 
     for (auto ctrack : track_graph.getConflicting(track)) {
-      // if (visited.find(ctrack) == visited.end()) {
       for (auto i : tracks_intervals.at(ctrack)) {
         conflicting.push_back(i);
       }
-      //}
     }
-    visited.insert(track);
 
-    // if (conflicting.size() > 1)
     cp_model.AddNoOverlap(conflicting);
   }
 
