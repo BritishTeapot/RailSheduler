@@ -4,8 +4,8 @@ Program for automated creation of train schedules.
 
 # Building
 
-- get or-tools for your OS (or-tools for linux are provided by default)
-- replace `src/or-tools` with your version (if needed)
+- get or-tools for your OS
+- replace `src/or-tools` with your version
 - cd into `src/build`
 - run `cmake ..`
 - run `make clean && make`
