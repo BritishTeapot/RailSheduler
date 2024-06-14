@@ -155,7 +155,7 @@ void Schedule::solve() {
     for (int task_id = 0; task_id < route.getLength() - 1; task_id++) {
       TaskID key = std::make_tuple(route_id, task_id);
       TaskID next_key = std::make_tuple(route_id, task_id + 1);
-      cp_model.AddGreaterOrEqual(all_tasks.at(next_key).start,
+      cp_model.AddGreaterOrEqual(all_tasks.at(next_key).start + LinearExpr(1),
                                  all_tasks.at(key).end);
     }
   }
