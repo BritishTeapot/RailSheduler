@@ -30,14 +30,22 @@ private:
   // it is useful to compute this at construction
   // time, because routes might be reused
 
+  // this indicates the amount of time spent
+  // inbetween verticies (e.g. it would
+  // occupy previous AND next section)
+  uint32_t overlap;
+  // this is roughly the same as time it takes
+  // travel the length of the train
+
 public:
   Route();
-  Route(std::vector<routeVertex> path);
-  Route(std::vector<std::pair<track_t, uint32_t>> path);
+  Route(std::vector<routeVertex> path, uint32_t overlap);
+  Route(std::vector<std::pair<track_t, uint32_t>> path, uint32_t overlap);
   track_t getPosition(int index);
   routeVertex getVertex(int index);
   size_t getLength();
   uint32_t getTime();
+  uint32_t getOverlap();
   static Route fromFile(std::ifstream &file);
 };
 

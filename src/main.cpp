@@ -107,9 +107,11 @@ int main(int argc, char *argv[]) {
   optroutes_file >> optroutes_count;
   for (range(i, optroutes_count)) {
     track_t from, to;
+    uint32_t overlap;
+    optroutes_file >> overlap;
     optroutes_file >> from;
     optroutes_file >> to;
-    optroutes.push_back(graph.findAllRoutes(from, to));
+    optroutes.push_back(graph.findAllRoutes(from, to, overlap));
     std::cout << optroutes.back().size() << " ";
   }
 

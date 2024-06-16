@@ -23,7 +23,7 @@ public:
   std::vector<track_t> getTracks();
   std::vector<track_t> getAdjacent(track_t track);
   std::vector<track_t> getConflicting(track_t track);
-  std::vector<Route> findAllRoutes(track_t from, track_t to);
+  std::vector<Route> findAllRoutes(track_t from, track_t to, uint32_t overlap);
 };
 
 #endif

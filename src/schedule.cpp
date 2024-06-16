@@ -92,8 +92,9 @@ void Schedule::solve() {
                          .WithName(std::string("start") + suffix);
       IntVar end = cp_model.NewIntVar({0, horizon})
                        .WithName(std::string("end") + suffix);
-      IntervalVar interval = cp_model.NewIntervalVar(start, duration + 1, end)
-                                 .WithName(std::string("interval") + suffix);
+      IntervalVar interval =
+          cp_model.NewIntervalVar(start, duration + route.getOverlap(), end)
+              .WithName(std::string("interval") + suffix);
       TaskID key = std::make_tuple(route_id, task_id);
       all_tasks.emplace(key, TaskType{/*.start=*/start,
                                       /*.end=*/end,
@@ -127,7 +128,9 @@ void Schedule::solve() {
         IntVar end = cp_model.NewIntVar({0, horizon})
                          .WithName(std::string("end") + suffix);
         IntervalVar interval =
-            cp_model.NewOptionalIntervalVar(start, duration + 1, end, presence)
+            cp_model
+                .NewOptionalIntervalVar(start, duration + route.getOverlap(),
+                                        end, presence)
                 .WithName(std::string("interval") + suffix);
         OptTaskID key = std::make_tuple(route_id, opt_id, task_id);
         all_opt_tasks.emplace(key, TaskType{start, end, interval});
@@ -155,7 +158,8 @@ void Schedule::solve() {
     for (int task_id = 0; task_id < route.getLength() - 1; task_id++) {
       TaskID key = std::make_tuple(route_id, task_id);
       TaskID next_key = std::make_tuple(route_id, task_id + 1);
-      cp_model.AddGreaterOrEqual(all_tasks.at(next_key).start + LinearExpr(1),
+      cp_model.AddGreaterOrEqual(all_tasks.at(next_key).start +
+                                     LinearExpr(route.getOverlap()),
                                  all_tasks.at(key).end);
     }
   }
@@ -171,7 +175,8 @@ void Schedule::solve() {
         OptTaskID key = std::make_tuple(route_id, opt_id, task_id);
         OptTaskID next_key = std::make_tuple(route_id, opt_id, task_id + 1);
         cp_model
-            .AddGreaterOrEqual(all_opt_tasks.at(next_key).start,
+            .AddGreaterOrEqual(all_opt_tasks.at(next_key).start +
+                                   LinearExpr(route.getOverlap()),
                                all_opt_tasks.at(key).end)
             .OnlyEnforceIf(opt_route_presence.at(rid));
       }
@@ -258,7 +263,7 @@ void Schedule::solve() {
         new_route.push_back(routeVertex{machine, duration});
       }
 
-      solution.push_back(Route(new_route));
+      solution.push_back(Route(new_route, route.getOverlap()));
     }
     for (int route_id = routes.size();
          route_id < routes.size() + optroutes.size(); ++route_id) {
@@ -290,7 +295,7 @@ void Schedule::solve() {
             new_route.push_back(routeVertex{machine, duration});
           }
 
-          solution.push_back(Route(new_route));
+          solution.push_back(Route(new_route, route.getOverlap()));
         }
       }
     }

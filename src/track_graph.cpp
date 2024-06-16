@@ -100,7 +100,8 @@ std::vector<track_t> TrackGraph::getConflicting(track_t track) {
   return conflictMap.at(track);
 }
 
-std::vector<Route> TrackGraph::findAllRoutes(track_t from, track_t to) {
+std::vector<Route> TrackGraph::findAllRoutes(track_t from, track_t to,
+                                             uint32_t overlap) {
 
   std::queue<
       std::pair<std::vector<std::pair<track_t, uint32_t>>, std::set<track_t>>>
@@ -112,7 +113,7 @@ std::vector<Route> TrackGraph::findAllRoutes(track_t from, track_t to) {
     q.pop();
 
     if (next.back().first == to) {
-      routes.push_back(Route(next));
+      routes.push_back(Route(next, overlap));
     } else if (visited.find(next.back().first) != visited.end()) {
       continue;
     } else {

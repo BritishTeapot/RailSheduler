@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-Route::Route(std::vector<std::pair<track_t, uint32_t>> path) {
+Route::Route(std::vector<std::pair<track_t, uint32_t>> path, uint32_t overlap) {
   std::vector<routeVertex> new_path;
   route_time = 0;
   for (auto i : path) {
@@ -18,14 +18,16 @@ Route::Route(std::vector<std::pair<track_t, uint32_t>> path) {
     new_path.push_back(rv);
   }
   this->path = new_path;
+  this->overlap = overlap;
 }
 
-Route::Route(std::vector<routeVertex> path) {
+Route::Route(std::vector<routeVertex> path, uint32_t overlap) {
   this->path = path;
   route_time = 0;
   for (auto rv : path) {
     route_time += rv.min_time;
   }
+  this->overlap = overlap;
 }
 
 Route::Route() { route_time = 0; } // default constructor for an empty path
@@ -37,11 +39,15 @@ size_t Route::getLength() { return path.size(); }
 
 uint32_t Route::getTime() { return route_time; }
 
+uint32_t Route::getOverlap() { return overlap; }
+
 Route Route::fromFile(std::ifstream &file) {
   size_t lenght;
+  uint32_t overlap;
   std::vector<routeVertex> path;
 
   file >> lenght;
+  file >> overlap;
 
   for (size_t i = 0; i < lenght; i++) {
     track_t track;
@@ -66,5 +72,5 @@ Route Route::fromFile(std::ifstream &file) {
     path.push_back(rv);
   }
 
-  return Route(path);
+  return Route(path, overlap);
 }
