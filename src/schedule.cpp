@@ -92,7 +92,7 @@ void Schedule::solve() {
                          .WithName(std::string("start") + suffix);
       IntVar end = cp_model.NewIntVar({0, horizon})
                        .WithName(std::string("end") + suffix);
-      IntervalVar interval = cp_model.NewIntervalVar(start, duration, end)
+      IntervalVar interval = cp_model.NewIntervalVar(start, duration + 1, end)
                                  .WithName(std::string("interval") + suffix);
       TaskID key = std::make_tuple(route_id, task_id);
       all_tasks.emplace(key, TaskType{/*.start=*/start,
@@ -127,7 +127,7 @@ void Schedule::solve() {
         IntVar end = cp_model.NewIntVar({0, horizon})
                          .WithName(std::string("end") + suffix);
         IntervalVar interval =
-            cp_model.NewOptionalIntervalVar(start, duration, end, presence)
+            cp_model.NewOptionalIntervalVar(start, duration + 1, end, presence)
                 .WithName(std::string("interval") + suffix);
         OptTaskID key = std::make_tuple(route_id, opt_id, task_id);
         all_opt_tasks.emplace(key, TaskType{start, end, interval});
@@ -194,23 +194,37 @@ void Schedule::solve() {
 
   IntVar obj_var = cp_model.NewIntVar({0, horizon}).WithName("makespan");
 
-  std::vector<IntVar> ends;
+  LinearExpr ends;
+  int count = 0;
   for (int route_id = 0; route_id < routes.size(); route_id++) {
     auto &route = routes.at(route_id);
     TaskID key = std::make_tuple(route_id, route.getLength() - 1);
-    ends.push_back(all_tasks.at(key).end);
+    ends += (LinearExpr(route.getTime()) - all_tasks.at(key).end);
+    count++;
   }
   for (int route_id = routes.size();
        route_id < routes.size() + optroutes.size(); route_id++) {
     auto optroute = optroutes.at(route_id - routes.size());
+    uint32_t max = 0;
+    for (auto route : optroute) {
+      max = (route.getTime() > max) ? route.getTime() : max;
+    }
     for (int opt_id = 0; opt_id < optroute.size(); opt_id++) {
       OptRouteID rid = {route_id, opt_id};
       auto &route = optroute.at(opt_id);
       OptTaskID key = std::make_tuple(route_id, opt_id, route.getLength() - 1);
-      ends.push_back(all_opt_tasks.at(key).end);
+      cp_model.AddGreaterOrEqual(all_opt_tasks.at(key).end, LinearExpr(max));
+      ends += (LinearExpr(max) - all_opt_tasks.at(key).end);
+      count++;
     }
   }
-  cp_model.AddMaxEquality(obj_var, ends);
+  cp_model.AddAbsEquality(obj_var, ends);
+  /*
+   * Originally this was meant to be average of the total delay
+   * It turns out however, it makes no difference whether you make it avrage or
+   * not.
+   */
+  // cp_model.Minimize(LinearExpr::WeightedSum({obj_var}, {count}));
   cp_model.Minimize(obj_var);
 
   const CpSolverResponse response = Solve(cp_model.Build());
